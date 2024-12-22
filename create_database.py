@@ -1,72 +1,77 @@
-# Các import cho việc load và xử lý tài liệu
-from langchain_community.document_loaders import DirectoryLoader  # Để load tài liệu từ thư mục
-from langchain.text_splitter import RecursiveCharacterTextSplitter  # Để chia nhỏ văn bản
-from langchain.schema import Document  # Schema cho tài liệu
-from langchain_openai import OpenAIEmbeddings  # Để tạo embeddings sử dụng OpenAI
-from langchain_community.vectorstores import FAISS    # Vector store để lưu trữ
-import openai  # OpenAI API
-from dotenv import load_dotenv  # Để load biến môi trường
-import os, shutil  # Các thao tác với hệ thống
+import glob
+from typing import List
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+import os
 
-load_dotenv()  # Load biến môi trường từ file .env
-openai.api_key = os.environ['OPENAI_API_KEY']  # Thiết lập API key
-
-# Định nghĩa các đường dẫn
-FAISS_PATH = "faiss"  # Thư mục lưu database vector
-DATA_PATH = "data/books"  # Thư mục chứa dữ liệu đầu vào
-
+CHUNK_SIZE = 300
+CHUNK_OVERLAP = 100
+DATA_PATH = os.path.join("data", "books", "*.md")  # Sửa lại đường dẫn
+FAISS_PATH = "faiss"
 
 def main():
     generate_data_store()
 
-
 def generate_data_store():
     documents = load_documents()
+    if not documents:
+        print("No documents found!")
+        return
     chunks = split_text(documents)
     save_to_faiss(chunks)
 
-
 def load_documents():
-    # Load tất cả file .md trong thư mục DATA_PATH
-    loader = DirectoryLoader(DATA_PATH, glob="*.md")
-    documents = loader.load()
-    return documents
+    all_documents = []
+    for file_path in glob.glob(DATA_PATH):
+        try:
+            # Chuyển đổi đường dẫn sang absolute path
+            abs_file_path = os.path.abspath(file_path)
+            print(f"Loading file: {abs_file_path}")
+            
+            # Kiểm tra file có tồn tại không
+            if not os.path.exists(abs_file_path):
+                print(f"File not found: {abs_file_path}")
+                continue
+                
+            loader = TextLoader(abs_file_path, encoding='utf-8')  # Thêm encoding
+            documents = loader.load()
+            all_documents.extend(documents)
+            print(f"Successfully loaded: {abs_file_path}")
+        except Exception as e:
+            print(f"Error loading file {file_path}: {str(e)}")
+    return all_documents
 
-
-def split_text(documents):
-    # Tạo text splitter để chia nhỏ văn bản
+def split_text(documents: List):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=300,  # Độ dài mỗi chunk
-        chunk_overlap=100,  # Độ chồng lấp giữa các chunk
-        length_function=len,
-        add_start_index=True,
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
     )
-    # Chia nhỏ tài liệu
     chunks = text_splitter.split_documents(documents)
-    
-    # In thông tin debug
     print(f"Split {len(documents)} documents into {len(chunks)} chunks.")
-    document = chunks[10]  # Xem ví dụ chunk thứ 10
-    print(document.page_content)
-    print(document.metadata)
+
+    # Print a sample chunk
+    if len(chunks) > 0:
+        print(chunks[0].page_content)
+        print(chunks[0].metadata)
     
     return chunks
 
-
-def save_to_faiss(chunks):
-    # Xóa database cũ nếu tồn tại
-    if os.path.exists(FAISS_PATH):
-        shutil.rmtree(FAISS_PATH)
-    
-    # Tạo database mới từ các chunks
-    db = FAISS.from_documents(
-        chunks,  # Các đoạn văn bản đã chia nhỏ
-        OpenAIEmbeddings(),  # Sử dụng OpenAI để tạo embeddings
-        persist_directory=FAISS_PATH  # Lưu vào thư mục
+def save_to_faiss(chunks: List):
+    # Initialize embeddings
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-    db.persist()  # Lưu database
-    print(f"Saved {len(chunks)} chunks to {FAISS_PATH}.")
-
+    
+    # Create and save FAISS index
+    db = FAISS.from_documents(chunks, embeddings)
+    
+    # Ensure the directory exists
+    os.makedirs(FAISS_PATH, exist_ok=True)
+    
+    # Save the index
+    db.save_local(FAISS_PATH)
 
 if __name__ == "__main__":
     main()
