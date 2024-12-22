@@ -18,7 +18,7 @@ Một hệ thống Retrieval-Augmented Generation (RAG) đơn giản sử dụng
 
 1. Clone repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/trngthnh369/langchain-rag-LLMs.git
 cd langchain-rag
 ```
 
@@ -41,9 +41,18 @@ pip install huggingface_hub
 ```
 
 4. Cấu hình môi trường:
-- Tạo file `.env` trong thư mục gốc
-- Thêm HuggingFace API token của bạn:
-- langchain-rag/ ├── create_database.py # Script tạo vector database ├── query_data.py # Script truy vấn và trả lời câu hỏi ├── .env # File cấu hình (chứa API tokens) ├── data/ │ └── books/ # Thư mục chứa tài liệu markdown │ └── alice_in_wonderland.md └── faiss/ # Thư mục chứa FAISS index
+Tạo file `.env` trong thư mục gốc
+Thêm HuggingFace API token của bạn:
+''' 
+## Cấu trúc thư mục
+'''
+langchain-rag/ ├── create_database.py # Script tạo vector database 
+               ├── query_data.py # Script truy vấn và trả lời câu hỏi 
+               ├── .env # File cấu hình (chứa API tokens) 
+               ├── data/ 
+               │ └── books/ # Thư mục chứa tài liệu markdown 
+               │ └── alice_in_wonderland.md 
+               └── faiss/ # Thư mục chứa FAISS index
   
 ## Cách sử dụng
 
@@ -54,10 +63,15 @@ pip install huggingface_hub
 2. Tạo vector database:
 ```bash
 python create_database.py
+```
 Truy vấn dữ liệu:
+```
 python query_data.py "Câu hỏi của bạn?"
+```
 Ví dụ:
+```
 python query_data.py "Who is Alice?"
+```
 Cách lấy HuggingFace API Token
 Đăng ký tại HuggingFace
 Vào Settings -> Access Tokens
