@@ -1,102 +1,105 @@
 # LangChain RAG System
 
-Một hệ thống Retrieval-Augmented Generation (RAG) đơn giản sử dụng LangChain, FAISS và HuggingFace để tìm kiếm và trả lời câu hỏi dựa trên tài liệu.
+A simple Retrieval-Augmented Generation (RAG) system using LangChain, FAISS, and HuggingFace to search and answer questions based on documents.
 
-## Tính năng
+## Features
 
-- Đọc và xử lý tài liệu văn bản từ files markdown
-- Tạo vector embeddings sử dụng HuggingFace
-- Lưu trữ và tìm kiếm vector sử dụng FAISS
-- Trả lời câu hỏi dựa trên context từ tài liệu
+* **Document Processing:** Reads and processes text documents from Markdown files.
+* **Vector Embeddings:** Generates vector embeddings using HuggingFace models.
+* **Vector Storage and Search:** Stores and searches vectors using FAISS.
+* **Contextual Q\&A:** Answers questions based on context retrieved from documents.
 
-## Yêu cầu hệ thống
+## System Requirements
 
-- Python 3.8+
-- pip (Python package manager)
+* Python 3.8+
+* pip (Python package manager)
 
-## Cài đặt
+## Installation
 
-1. Clone repository:
-```bash
-git clone https://github.com/trngthnh369/langchain-rag-LLMs.git
-cd langchain-rag
-```
+1. **Clone the repository:**
 
-2. Tạo và kích hoạt môi trường ảo:
-```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
-```
+   ```bash
+   git clone https://github.com/trngthnh369/langchain-rag-LLMs.git
+   cd langchain-rag-LLMs
+   ```
 
-3. Cài đặt các thư viện cần thiết:
-```bash
-pip install langchain langchain-community langchain-huggingface
-pip install faiss-cpu
-pip install sentence-transformers
-pip install python-dotenv
-pip install huggingface_hub
-```
+2. **Create a virtual environment (optional but recommended):**
 
-4. Cấu hình môi trường:
-Tạo file `.env` trong thư mục gốc
-Thêm HuggingFace API token của bạn:
-''' 
-## Cấu trúc thư mục
-'''
-langchain-rag/ ├── create_database.py # Script tạo vector database 
-               ├── query_data.py # Script truy vấn và trả lời câu hỏi 
-               ├── .env # File cấu hình (chứa API tokens) 
-               ├── data/ 
-               │ └── books/ # Thư mục chứa tài liệu markdown 
-               │ └── alice_in_wonderland.md 
-               └── faiss/ # Thư mục chứa FAISS index
-  
-## Cách sử dụng
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-1. Chuẩn bị dữ liệu:
-- Đặt các file markdown vào thư mục `data/books/`
-- Đảm bảo files có định dạng .md
+3. **Install the required packages:**
 
-2. Tạo vector database:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Usage
+
+### 1. Create the Vector Database
+
+Process the documents and create a FAISS vector database.
+
 ```bash
 python create_database.py
 ```
-Truy vấn dữ liệu:
+
+This script will:
+
+* Read documents from the `data/` directory.
+* Generate embeddings using HuggingFace models.
+* Store the embeddings in a FAISS index.
+
+### 2. Query the Data
+
+Ask questions based on the processed documents.
+
+```bash
+python query_data.py
 ```
-python query_data.py "Câu hỏi của bạn?"
+
+You'll be prompted to enter a question. The system will:
+
+* Retrieve relevant documents from the FAISS index.
+* Use LangChain to generate an answer based on the retrieved context.
+
+### 3. Compare Embeddings (Optional)
+
+If you wish to compare different embedding models:
+
+```bash
+python compare_embeddings.py
 ```
-Ví dụ:
+
+This script allows you to evaluate and compare the performance of various embedding models on your dataset.
+
+## Customization
+
+* **Adding Documents:** Place your Markdown (`.md`) files in the `data/` directory. Rerun `create_database.py` to process the new documents.
+* **Changing Embedding Models:** Modify the embedding model used in `create_database.py` and `query_data.py` by selecting a different HuggingFace model.
+* **Adjusting FAISS Parameters:** Tweak the FAISS index parameters in `create_database.py` to optimize search performance.
+
+## Project Structure
+
 ```
-python query_data.py "Who is Alice?"
+langchain-rag-LLMs/
+├── data/
+│   └── books/                 # Directory containing Markdown documents
+├── create_database.py         # Script to create FAISS vector database
+├── query_data.py              # Script to query the vector database
+├── compare_embeddings.py      # Script to compare different embedding models
+├── requirements.txt           # Python dependencies
+└── README.md                  # Project documentation
 ```
-Cách lấy HuggingFace API Token
-Đăng ký tại HuggingFace
-Vào Settings -> Access Tokens
-Click "New Token"
-Đặt tên và chọn role "read"
-Copy token và thêm vào file .env
-Xử lý lỗi thường gặp
-Lỗi không tìm thấy file:
 
-Kiểm tra đường dẫn file trong thư mục data/books/
-Đảm bảo file có đuôi .md
-Lỗi API Token:
+## Acknowledgements
 
-Kiểm tra token trong file .env
-Đảm bảo token còn hiệu lực
-Tạo token mới nếu cần
-Lỗi FAISS index:
+* [LangChain](https://github.com/hwchase17/langchain) for providing the framework to build LLM-powered applications.
+* [FAISS](https://github.com/facebookresearch/faiss) for efficient similarity search and clustering of dense vectors.
+* [HuggingFace](https://huggingface.co/) for access to a wide range of pre-trained models.
 
-Chạy lại create_database.py
-Kiểm tra thư mục faiss đã được tạo
-Đóng góp
-Mọi đóng góp đều được chào đón! Hãy tạo issue hoặc pull request nếu bạn muốn cải thiện dự án.
+## Contact
 
-License
-MIT License
-
-Liên hệ
-gmail: truongthinhnguyen30303@gmail.com
+For questions or support, please contact: truongthinhnguyen30303@gmail.com
